@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: 'EC2 template to create Windows machine that will be a jumpbox to connect to the Database'
+Parameters:
+  Sage50ServiceEC2Name:
+    Description: The name of the EC2 being created.
+    Type: String
+    Default: "sage50service-jumpbox"
+  Sage50OnboardingEC2Name:
+    Description: The name of the EC2 being created.
+    Type: String
+    Default: "sage50Onboarding-jumpbox"  
+  Sage200OnboardingEC2Name:
+    Description: The name of the EC2 being created.
+    Type: String
+    Default: "sage200Onboarding-jumpbox"
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable RDP access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Default: sage50200key
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t3.medium
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+      t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge,
+      m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
+      m5.large, m5.xlarge, m5.2xlarge, m5.4xlarge,
+      c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge,
+      g3.8xlarge,
+      r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, r3.12xlarge,
+      i3.xlarge, i3.2xlarge, i3.4xlarge, i3.8xlarge,
+      d2.xlarge, d2.2xlarge, d2.4xlarge, d2.8xlarge]
+    ConstraintDescription: must be a valid EC2 instance type.   
+  RemoteAccessLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instance
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  LatestAmiId:
+    Type: String
+    Default: ami-00a452e228b12f42b
+  VpcStackName:
+    Type: String
+    Description: VPC CloudFormation stack name with references
+    Default: sage50-200-onboarding-vpc
+  RDSStackName:
+    Type: String
+    Description: RDS CloudFormation stack name with references
+    Default: rds
+Resources:
+  Sage50ServiceEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref 'InstanceType'
+      KeyName: !Ref 'KeyName'
+      ImageId: !Ref 'LatestAmiId'
+      IamInstanceProfile: !Ref InstanceProfile
+      Tags:
+        - Key: 'Name'
+          Value: !Ref 'Sage50ServiceEC2Name'
+      SubnetId: 
+        Fn::ImportValue: !Sub "${AWS::Region}-${VpcStackName}-PublicSubnet1"
+      SecurityGroupIds:
+        - Ref: InstanceSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 100
+      UserData:
+        Fn::Base64: !Sub |
+          <powershell>
+          Set-Location "C:\Windows\system32"
+
+          #Install  
+          $Path = $env:TEMPss;
+          $Installer = "chrome_installer.exe";
+          Invoke-WebRequest "http://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile     $Path\$Installer; 
+          Start-Process -FilePath $Path\$Installer -ArgumentList "/silent /install" -Verb RunAs -Wait;
+          Remove-Item $Path\$Installer
+
+          msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi /quiet
+          mkdir "C:\temp"
+          Invoke-WebRequest -Uri "https://www.heidisql.com/installers/HeidiSQL_11.3.0.6295_Setup.exe" -OutFile "C:\temp\HeidiSQL.exe"
+
+          C:\temp\HeidiSQL.exe /VERYSILENT /NORESTART
+          </powershell>
+  InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Roles:
+        - !Ref HostRole
+      Path: /
+      InstanceProfileName: ec2-instance-profile
+  HostRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Join
+        - ''
+        - - !Ref Sage50ServiceEC2Name
+          - 'ec2-role'
+      ManagedPolicyArns: 
+        - "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+      Policies:
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+            - Effect: Allow
+              Action:
+              - s3:*
+              - secretsmanager:GetSecretValue
+              Resource: '*'
+          PolicyName: s3-and-secretsmanager
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Effect: Allow
+        Version: 2012-10-17   
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable RDP access via port 3389
+      VpcId:
+        Fn::ImportValue: !Sub "${AWS::Region}-${VpcStackName}-VPC"
+      SecurityGroupIngress:
+      - CidrIp: 93.189.179.0/24	# Sage spain IP range
+        IpProtocol: tcp
+        FromPort: 3389
+        ToPort: 3389
+      - CidrIp: 195.110.77.0/25	# Cobalt IP range
+        IpProtocol: tcp
+        FromPort: 3389
+        ToPort: 3389
+      - CidrIp: 82.1.4.48/29 # Cobalt IP range
+        IpProtocol: tcp
+        FromPort: 3389
+        ToPort: 3389
