@@ -19,7 +19,7 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable RDP access to the instance
     Type: AWS::EC2::KeyPair::KeyName
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
-    Default: sage50200key
+    Default: githubactions
   InstanceType:
     Description: WebServer EC2 instance type
     Type: String
