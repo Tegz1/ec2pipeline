@@ -44,11 +44,11 @@ Parameters:
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
   LatestAmiId:
     Type: String
-    Default: ami-00a452e228b12f42b
+    Default: ami-08ed5c5dd62794ec0
   VpcStackName:
     Type: String
     Description: VPC CloudFormation stack name with references
-    Default: sage50-200-onboarding-vpc
+    Default: ''
   RDSStackName:
     Type: String
     Description: RDS CloudFormation stack name with references
@@ -64,8 +64,7 @@ Resources:
       Tags:
         - Key: 'Name'
           Value: !Ref 'Sage50ServiceEC2Name'
-      SubnetId: 
-        Fn::ImportValue: !Sub "${AWS::Region}-${VpcStackName}-PublicSubnet1"
+      SubnetId: subnet-0a5e0bb09ef81c362
       SecurityGroupIds:
         - Ref: InstanceSecurityGroup
       BlockDeviceMappings:
@@ -130,8 +129,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable RDP access via port 3389
-      VpcId:
-        Fn::ImportValue: !Sub "${AWS::Region}-${VpcStackName}-VPC"
+      VpcId: vpc-0f026e56f6258d021
       SecurityGroupIngress:
       - CidrIp: 93.189.179.0/24	# Sage spain IP range
         IpProtocol: tcp
