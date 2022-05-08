@@ -36,7 +36,7 @@ Parameters:
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
   LatestAmiId:
     Type: String
-    Default: ami-08ed5c5dd62794ec0
+    Default: ami-0519981d911570e5a
   VpcStackName:
     Type: String
     Description: VPC CloudFormation stack name with references
