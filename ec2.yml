@@ -6,7 +6,7 @@ Parameters:
   Sage50ServiceEC2Name:
     Description: The name of the EC2 being created.
     Type: String
-    Default: "sage50service-jumpbox"
+    Default: githubactionsEC2
   Sage50OnboardingEC2Name:
     Description: The name of the EC2 being created.
     Type: String
