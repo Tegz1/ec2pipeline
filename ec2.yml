@@ -7,14 +7,6 @@ Parameters:
     Description: The name of the EC2 being created.
     Type: String
     Default: githubactionsEC2
-  Sage50OnboardingEC2Name:
-    Description: The name of the EC2 being created.
-    Type: String
-    Default: "sage50Onboarding-jumpbox"  
-  Sage200OnboardingEC2Name:
-    Description: The name of the EC2 being created.
-    Type: String
-    Default: "sage200Onboarding-jumpbox"
   KeyName:
     Description: Name of an existing EC2 KeyPair to enable RDP access to the instance
     Type: AWS::EC2::KeyPair::KeyName
@@ -49,10 +41,7 @@ Parameters:
     Type: String
     Description: VPC CloudFormation stack name with references
     Default: ''
-  RDSStackName:
-    Type: String
-    Description: RDS CloudFormation stack name with references
-    Default: rds
+
 Resources:
   Sage50ServiceEC2Instance:
     Type: AWS::EC2::Instance
