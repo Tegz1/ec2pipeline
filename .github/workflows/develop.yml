@@ -35,7 +35,7 @@ jobs:
         id: ec2
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
-          name: githubactionsEC2
+          name: EC2githubactions
           template: ec2.yml
           capabilities: CAPABILITY_NAMED_IAM
           no-fail-on-empty-changeset: "1"
