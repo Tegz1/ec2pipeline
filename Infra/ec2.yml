@@ -53,7 +53,7 @@ Resources:
       Tags:
         - Key: 'Name'
           Value: !Ref 'Sage50ServiceEC2Name'
-      SubnetId: subnet-0a5e0bb09ef81c362
+      SubnetId: subnet-0ac30eca9cbfb1172
       SecurityGroupIds:
         - Ref: InstanceSecurityGroup
       BlockDeviceMappings:
@@ -118,7 +118,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable RDP access via port 3389
-      VpcId: vpc-0f026e56f6258d021
+      VpcId: vpc-0f48e1d25013da304
       SecurityGroupIngress:
       - CidrIp: 93.189.179.0/24	# Sage spain IP range
         IpProtocol: tcp
