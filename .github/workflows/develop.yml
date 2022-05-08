@@ -38,7 +38,7 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1.0.3
         with:
           # The name of the CloudFormation stack
-          name: ec2
+          name: gitvpc
           template: Infra/vpc.yml
           capabilities:  CAPABILITY_NAMED_IAM
           # The parameters to override in the stack inputs. The list is comma-delimited, with each entry formatted as <ParameterName>=<ParameterValue>.
