@@ -33,7 +33,7 @@ jobs:
 
       - name: Deploy Amazon EC2
         id: ec2
-        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.0.3
         with:
           name: EC2githubactions
           template: ec2.yml
